@@ -183,6 +183,28 @@ coalescent w h = fmap joinForest (coalescentForest w h)
             Just t  -> t
             Nothing -> undefined
 
+coalescentForestFixed :: Int -> Int -> Height -> Prob [Maybe Taxo]
+coalescentForestFixed = memo2 $ \gridW w h ->
+    case h of
+      1 -> return $ [Just (chain 0) | i <- [0..w-1]] ++ replicate (gridW - w) Nothing
+      _ -> do
+        prev <- coalescentForestFixed gridW w (h-1)
+        parts <- randomAssignmentFibres gridW [0..gridW-1]
+        let trees = map (mkTree (h-1) prev) parts
+        return trees
+  where
+    mkTree :: Height -> [Maybe Taxo] -> [Int] -> Maybe Taxo
+    mkTree h prev part =
+        fmap rootJoin $ NonEmpty.nonEmpty [t | i <- part, Just t <- [prev!!i]]
+
+coalescentFixed :: Int -> Int -> Height -> Prob Taxo
+coalescentFixed gridW w h = fmap joinForest (coalescentForestFixed gridW w h)
+  where
+    joinForest forest =
+        case fmap rootJoin $ NonEmpty.nonEmpty [t | Just t <- forest] of
+            Just t  -> t
+            Nothing -> undefined
+
 coalescentForestMonotone :: Int -> Height -> Prob [Taxo]
 coalescentForestMonotone = memo2 $ \w h ->
     case h of

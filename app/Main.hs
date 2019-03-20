@@ -108,6 +108,10 @@ main = do
         let (width, height) = (read s_width, read s_height)
         return $ GenModel TaxoGen.coalescentMonotone width height
 
+    parseArgs ["coalescent-fixed", s_gridW, s_width, s_height] = do
+        let (gridW, width, height) = (read s_gridW, read s_width, read s_height)
+        return $ GenModel (TaxoGen.coalescentFixed gridW) width height
+
     parseArgs ["partition", s_width, s_height] = do
         let (width, height) = (read s_width, read s_height)
         return $ GenModel TaxoGen.partitionModelUnif width height
